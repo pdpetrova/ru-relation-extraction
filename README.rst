@@ -2,7 +2,7 @@
 Relation Extraction for Russian. Narcy-based
 ===============================================================
 
-This is a study project to create a module for extracting relations from texts on Russian. This project is based on the Narcy project.
+This is a study project to create a module for extracting relations from texts in Russian. This project is based on the Narcy project.
 For original Narcy project, please refer to https://github.com/sztal/narcy.git
 
 Installation
