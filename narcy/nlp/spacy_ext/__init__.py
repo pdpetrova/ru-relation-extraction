@@ -6,7 +6,7 @@ from spacy.tokens import Token, Span, Doc
 from . import getters
 from ..utils import make_hash
 
-Doc.set_extension('_id', default=None)
+Doc.set_extension('_id', force=True, default=None)
 Doc.set_extension('_polarity', default=None)
 Span.set_extension('_polarity', default=None)
 
