@@ -19,7 +19,7 @@ setup(
     name='ru-relation-extraction',
     version='0.0.0',
     description='Narrative analysis in Python',
-    long_description=readme + '\n\n' + doclink + '\n\n',
+    long_description=readme + '\n\n',
     author='',
     author_email='',
     url='',
