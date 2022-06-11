@@ -141,6 +141,8 @@ def get_compound_verb(token):
             break
         if prev_token == token:
             break
+    if prev_token.nbor(-1)._.is_aux_dep:
+        prev_token = prev_token.nbor(-1)
     start = prev_token._.si
     while not token.sent[start]._.is_verb and start < end - 1:
         start += 1
