@@ -127,6 +127,11 @@ def get_compound_verb(token):
             next_token = next_token.nbor(1)
         except IndexError:
             break
+    while next_token._.is_verblike:
+        try:
+            next_token = next_token.nbor(1)
+        except IndexError:
+            break
     end = next_token._.si
     prev_token = token
     while prev_token._.is_verblike:
