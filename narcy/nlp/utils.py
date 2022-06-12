@@ -122,34 +122,29 @@ def get_relation(head, sub):
 def get_compound_verb(token):
     """Get compound verb from a verb token."""
     next_token = token
-    while next_token._.is_verblike:
+    while next_token._.is_verblike or (next_token._.is_aux_dep or next_token.pos_ == "AUX"):
         try:
             next_token = next_token.nbor(1)
         except IndexError:
             break
-    while next_token._.is_verblike:
-        try:
-            next_token = next_token.nbor(1)
-        except IndexError:
-            break
+    if next_token._.is_adj:
+        next_token = next_token.nbor(1)
     end = next_token._.si
     prev_token = token
-    while prev_token._.is_verblike:
+    while prev_token._.is_verblike or prev_token._.is_adj:
         try:
             prev_token = prev_token.nbor(-1)
         except IndexError:
             break
-    while not prev_token._.is_verb:
+    while not (prev_token._.is_verb or prev_token._.is_aux_dep or prev_token.pos_ == "AUX"):
         try:
             prev_token = prev_token.nbor(1)
         except IndexError:
             break
         if prev_token == token:
             break
-    if prev_token.nbor(-1)._.is_aux_dep:
-        prev_token = prev_token.nbor(-1)
     start = prev_token._.si
-    while not (token.sent[start]._.is_verb or token.sent[start]._.is_aux_dep) and start < end - 1:
+    while not (token.sent[start]._.is_verb or token.sent[start]._.is_aux_dep or token.sent[start].pos_ == "AUX") and start < end - 1:
         start += 1
     return token.sent[start:end]
 
