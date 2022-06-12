@@ -6,6 +6,7 @@ from collections import namedtuple
 import unicodedata
 import hashlib
 from .en.tenses import detect_tense as detect_tense_en
+from .ru.tenses import detect_tense as detect_tense_ru
 from .tenses import PRESENT, NORMAL
 
 
@@ -204,6 +205,8 @@ def detect_tense(verb):
     """Detect tense of a verb."""
     if verb.vocab.lang == 'en':
         return detect_tense_en(verb)
+    if verb.vocab.lang == 'ru':
+        return detect_tense_ru(verb)
     return PRESENT, NORMAL
 
 def make_hash(*args):
