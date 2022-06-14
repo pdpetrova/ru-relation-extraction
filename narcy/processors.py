@@ -182,6 +182,58 @@ def doc_to_relations_df(doc, reduced=True, **kwds):
         relations = reduce_relations(relations)
     return relations_to_df(relations, **kwds)
 
+def get_loc(relations):
+    """Get subject-verb-location(adverb) triplets from a relations.
+
+    Relation types
+    ==============
+
+    loc
+        Subject-verb-location triplet.
+
+    """
+    for relation in relations:
+        if relation.rtype != 'subject-verb':
+            continue
+        verb, subj = relation.sub, relation.head
+        if not subj._.drive._.is_semantic:
+            continue
+        tense, mode = verb._.tense
+        neg = verb._.is_neg
+        for loc in verb._.vlocations:
+            if loc._.drive._.is_loc_dep or loc._.drive._.is_noun:
+                rtype = 'loc'
+            subj_terms = tuple(takewhile(lambda t: t != verb, subj._.drive._.subterms))
+            loc_terms = tuple(st for st in loc._.drive._.subterms if st != verb)
+            start = min(
+                subj.start, verb.start, loc.start,
+                *[ t.start for t in subj_terms ],
+                *[ t.start for t in loc_terms ]
+            )
+            end = max(
+                subj.end, verb.end, loc.end,
+                *[ t.end for t in subj_terms ],
+                *[ t.end for t in loc_terms ]
+            )
+            sent = subj.sent
+            doc = sent.doc
+            rel = doc[start:end]
+            yield SVO(
+                tense=tense,
+                mode=mode,
+                neg=neg,
+                rtype=rtype,
+                subj=subj,
+                subj_terms=subj_terms,
+                verb=verb,
+                obj=loc,
+                obj_terms=loc_terms,
+                sentiment=rel._.sentiment,
+                sent_sentiment=sent._.sentiment,
+                valence=rel._.valence,
+                sent_valence=sent._.valence
+            )
+
 def get_svos(relations):
     """Get subject-verb-object triplets from a relations.
 
@@ -238,6 +290,7 @@ def get_svos(relations):
                 sent_valence=sent._.valence
             )
 
+
 def svo_to_record(svo):
     """Convert *SVO* object to *SVO* record.
 
@@ -291,6 +344,21 @@ def doc_to_svos_df(doc, columns=None):
         If ``None``, then ``SVORecord`` field names are used.
     """
     records = map(svo_to_record, get_svos(doc._.relations))
+    columns = SVORecord._fields if not columns else columns
+    df = pd.DataFrame.from_records(records, columns=columns)
+    return df
+
+def doc_to_locs_df(doc, columns=None):
+    """Dump document to a *SVOs* data frame.
+
+    Parameters
+    ----------
+    doc : spacy.tokens.Doc
+        Document object.
+    columns : iterable or None
+        If ``None``, then ``SVORecord`` field names are used.
+    """
+    records = map(svo_to_record, get_loc(doc._.relations))
     columns = SVORecord._fields if not columns else columns
     df = pd.DataFrame.from_records(records, columns=columns)
     return df
