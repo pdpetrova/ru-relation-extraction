@@ -42,7 +42,8 @@ _COMPOUND = ('compound',)
 _COMPLEMENT = ('acomp',)
 _ATTR = ('attr',)
 _CASE = ('case',)
-_APPOS = ('appos', 'nmod')
+_APPOS = ('appos')
+_APPOS_OBJ = ('nmod')
 
 _TAGS_PART = ('VBN', 'VBD', 'VBG')
 _TAGS_INF = ('VB',)
@@ -93,8 +94,10 @@ is_obj_t_g = lambda t: t._.is_drive \
 is_loc_t_g = lambda t: t._.is_drive \
     and (t._.is_loc_dep or t._.is_comp_dep or t._.is_attr_dep)
 
-is_appos_t_g = lambda t: t._.is_drive \
+is_appos_obj_t_g = lambda t: t._.is_drive \
     and (t._.is_appos_dep or t._.is_comp_dep or t._.is_attr_dep)
+
+is_appos_t_g = lambda t: t.dep_ in _APPOS
 
 is_prep_dep_t_g = lambda t: t.dep_ in _PREP
 is_aux_dep_t_g = lambda t: t.dep_ in _AUX
@@ -102,7 +105,7 @@ is_conj_dep_t_g = lambda t: t.dep_ in _CONJ
 is_obj_dep_t_g = lambda t: t.dep_ in _OBJ
 is_loc_dep_t_g = lambda t: t.dep_ in _LOC
 is_compound_dep_t_g = lambda t: t.dep_ in _COMPOUND
-is_appos_dep_t_g = lambda t: t.dep_ in _APPOS
+is_appos_dep_t_g = lambda t: t.dep_ in _APPOS_OBJ
 is_subj_dep_t_g = lambda t: t.dep_ in _SUBJ
 is_comp_dep_t_g = lambda t: t.dep_ in _COMPLEMENT
 is_attr_dep_t_g = lambda t: t.dep_ in _ATTR
@@ -265,16 +268,16 @@ def vlocations_s_g(span):
 
 def vappos_s_g(span):
     for child in span._.drive.children:
-        if child._.is_appos:
+        if child._.is_appos_obj:
             yield child._.compound
             if child._.is_conj_dep:
                 for conj in child._.conjuncts:
                     if conj._.is_drive:
                         yield conj._.compound
-        elif child._.is_conj_dep and child._.is_appos:
+        elif child._.is_conj_dep and child._.is_appos_obj:
             yield from child._.compound._.vappos
         for conj in child._.conjuncts:
-            if conj._.is_appos:
+            if conj._.is_appos_obj:
                 yield conj._.compound
 
 def is_compound_s_g(span):
