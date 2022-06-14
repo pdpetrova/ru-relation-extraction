@@ -9,6 +9,11 @@ from .en.tenses import detect_tense as detect_tense_en
 from .ru.tenses import detect_tense as detect_tense_ru
 from .tenses import PRESENT, NORMAL
 
+OBJECT_DEPS = {"obj", "iobj"}
+SUBJECT_DEPS = {"nsubj", "nsubj:pass"}
+PREDICATE_DEPS = {"ROOT", "aux", "xcomp"}
+LOCATION_DEPS = {"obl", "obl:agent"}
+
 
 Relation = namedtuple('Relation', [
     'tense', 'mode', 'rel', 'rtype', 'head', 'sub'
