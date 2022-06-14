@@ -32,6 +32,8 @@ into tidy data frames that describe all relations extracted from the text.
     Dumps *spacy* ``Doc`` objects to *pandas* data frames
     describing all subject-verb-object triplets.
 
+``get_all_relations``
+    Get all possible relations from texts. Available for Russian only. Gets only SVOs for English. 
 
 Example
 -------
