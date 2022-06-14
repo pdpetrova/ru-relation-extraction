@@ -37,6 +37,7 @@ _NEG = ('neg',)
 _CONJ = ('conj',)
 _ADJECTIVAL = ('acl', 'amod', 'amod')
 _OBJ = ('obj', 'pobj', 'dobj')
+_LOC = ('obl')
 _COMPOUND = ('compound',)
 _COMPLEMENT = ('acomp',)
 _ATTR = ('attr',)
@@ -88,10 +89,14 @@ is_term_t_g = lambda t: t._.is_drive and t._.is_semantic \
 is_obj_t_g = lambda t: t._.is_drive \
     and (t._.is_obj_dep or t._.is_comp_dep or t._.is_attr_dep)
 
+is_loc_t_g = lambda t: t._.is_drive \
+    and (t._.is_loc_dep or t._.is_comp_dep or t._.is_attr_dep)
+
 is_prep_dep_t_g = lambda t: t.dep_ in _PREP
 is_aux_dep_t_g = lambda t: t.dep_ in _AUX
 is_conj_dep_t_g = lambda t: t.dep_ in _CONJ
 is_obj_dep_t_g = lambda t: t.dep_ in _OBJ
+is_loc_dep_t_g = lambda t: t.dep_ in _LOC
 is_compound_dep_t_g = lambda t: t.dep_ in _COMPOUND
 is_subj_dep_t_g = lambda t: t.dep_ in _SUBJ
 is_comp_dep_t_g = lambda t: t.dep_ in _COMPLEMENT
@@ -114,7 +119,7 @@ def compound_t_g(token):
     compound = token.sent[token._.si:token._.si+1]
     if compound._.is_ent:
         return get_entity_from_span(compound)
-    if token._.is_verblike:
+    if token._.is_verblike or token.pos_ == "AUX" or token._.is_adj:
         compound = get_compound_verb(token)
         if compound:
             return compound
@@ -238,6 +243,21 @@ def vobjects_s_g(span):
         for conj in child._.conjuncts:
             if conj._.is_obj:
                 yield conj._.compound
+
+def vlocations_s_g(span):
+    for child in span._.drive.children:
+        if child._.is_loc:
+            yield child._.compound
+            if child._.is_conj_dep:
+                for conj in child._.conjuncts:
+                    if conj._.is_drive:
+                        yield conj._.compound
+        elif child._.is_conj_dep and child._.is_verb:
+            yield from child._.compound._.vobjects
+        for conj in child._.conjuncts:
+            if conj._.is_loc:
+                yield conj._.compound
+
 
 def is_compound_s_g(span):
     return len(span) > 1
