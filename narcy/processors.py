@@ -234,6 +234,59 @@ def get_loc(relations):
                 sent_valence=sent._.valence
             )
 
+def get_appos(relations):
+    """Get subject-verb-location(adverb) triplets from a relations.
+
+    Relation types
+    ==============
+
+    loc
+        Subject-verb-location triplet.
+
+    """
+    for relation in relations:
+        if relation.rtype != 'noun-noun':
+            continue
+        subj, appos = relation.sub, relation.head
+        if not subj._.drive._.is_semantic:
+            continue
+        tense, mode = appos._.tense
+        neg = appos._.is_neg
+        for obj in appos._.vappos:
+            if obj._.drive._.is_appos_dep or obj._.drive._.is_noun:
+                rtype = 'appos'
+            subj_terms = tuple(takewhile(lambda t: t != appos, subj._.drive._.subterms))
+            app_terms = tuple(st for st in obj._.drive._.subterms if st != appos)
+            start = min(
+                subj.start, appos.start, obj.start,
+                *[ t.start for t in subj_terms ],
+                *[ t.start for t in app_terms ]
+            )
+            end = max(
+                subj.end, appos.end, obj.end,
+                *[ t.end for t in subj_terms ],
+                *[ t.end for t in app_terms ]
+            )
+            sent = subj.sent
+            doc = sent.doc
+            rel = doc[start:end]
+            yield SVO(
+                tense=tense,
+                mode=mode,
+                neg=neg,
+                rtype=rtype,
+                subj=subj,
+                subj_terms=subj_terms,
+                verb=appos,
+                obj=obj,
+                obj_terms=app_terms,
+                sentiment=rel._.sentiment,
+                sent_sentiment=sent._.sentiment,
+                valence=rel._.valence,
+                sent_valence=sent._.valence
+            )
+
+
 def get_svos(relations):
     """Get subject-verb-object triplets from a relations.
 
@@ -333,6 +386,48 @@ def svo_to_record(svo):
         sentid=svo.verb.sent._.id
     )
 
+def app_to_record(svo):
+    """Convert *SVO* object to *SVO* record.
+
+    Parameters
+    ----------
+    svo : tuple
+        SVO tuple.
+    """
+    return SVORecord(
+        tense=svo.tense,
+        mode=svo.mode,
+        neg=svo.neg,
+        rtype=svo.rtype,
+        subj=svo.subj.text.lower(),
+        verb=svo.appos.text.lower(),
+        obj=svo.obj.text.lower(),
+        subj_lead=svo.subj._.lead.text.lower(),
+        verb_lead=svo.appos._.lead.text.lower(),
+        obj_lead=svo.obj._.lead.text.lower(),
+        subj_lemma=svo.subj._.lead._.lemma,
+        verb_lemma=svo.appos._.lead._.lemma,
+        obj_lemma=svo.obj._.lead._.lemma,
+        subj_ent=svo.subj._.is_ent,
+        subj_ent_label=svo.subj.label_,
+        obj_ent=svo.obj._.is_ent,
+        obj_ent_label=svo.obj.label_,
+        subj_terms=tuple(t._.lemma for t in svo.subj_terms),
+        obj_terms=tuple(t._.lemma for t in svo.obj_terms),
+        subj_vector_norm=svo.subj.vector_norm,
+        verb_vector_norm=svo.appos.vector_norm,
+        obj_vector_norm=svo.obj.vector_norm,
+        subj_vector=svo.subj.vector,
+        verb_vector=svo.appos.vector,
+        obj_vector=svo.obj.vector,
+        sentiment=svo.sentiment,
+        sent_sentiment=svo.sent_sentiment,
+        valence=svo.valence,
+        sent_valence=svo.sent_valence,
+        docid=svo.verb.doc._.id,
+        sentid=svo.verb.sent._.id
+    )
+
 def doc_to_svos_df(doc, columns=None):
     """Dump document to a *SVOs* data frame.
 
@@ -359,6 +454,21 @@ def doc_to_locs_df(doc, columns=None):
         If ``None``, then ``SVORecord`` field names are used.
     """
     records = map(svo_to_record, get_loc(doc._.relations))
+    columns = SVORecord._fields if not columns else columns
+    df = pd.DataFrame.from_records(records, columns=columns)
+    return df
+
+def doc_to_appos_df(doc, columns=None):
+    """Dump document to a *SVOs* data frame.
+
+    Parameters
+    ----------
+    doc : spacy.tokens.Doc
+        Document object.
+    columns : iterable or None
+        If ``None``, then ``SVORecord`` field names are used.
+    """
+    records = map(svo_to_record, get_appos(doc._.relations))
     columns = SVORecord._fields if not columns else columns
     df = pd.DataFrame.from_records(records, columns=columns)
     return df
