@@ -37,10 +37,10 @@ def detect_tense(verb):
     first_text = first.text.lower()
     if first_text in _WORDS_FUTURE:
         tense = FUTURE
-    elif first.morph.get('Tense')[0] == 'Pres':
+    elif first.morph.get('Tense') == ['Pres']:
         tense = PRESENT
-    elif first.morph.get('Tense')[0] == 'Fut':
+    elif first.morph.get('Tense') == ['Fut']:
         tense = FUTURE
-    elif first.morph.get('Tense')[0] == 'Past':
+    elif first.morph.get('Tense') == ['Past']:
         tense = PAST
     return tense, mode
