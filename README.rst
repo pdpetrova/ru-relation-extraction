@@ -44,7 +44,7 @@ Also import other functions that will be used later.
 
 At this stage it also required to load a language models and setup a function
 for converting texts to documents.
-Better models - like ``'en_core_web_md'`` - may be necessary for proper word vectors.
+Better models - like ``'ru_core_news_lg'`` - may be necessary for proper word vectors.
 
 .. code-block:: python
 
