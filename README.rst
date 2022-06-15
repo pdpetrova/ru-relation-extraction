@@ -50,10 +50,10 @@ Better models - like ``'en_core_web_md'`` - may be necessary for proper word vec
 
     import spacy
     from narcy import document_factory
-    from narcy import doc_to_relations_df, doc_to_svos_df, doc_to_tokens_df
+    from narcy import doc_to_relations_df, doc_to_svos_df, doc_to_tokens_df, get_all_relations
 
     # Load NLP object with language model.
-    nlp = spacy.load('en_core_web_sm')
+    nlp = spacy.load('ru_core_news_sm')
     # Create function for converting texts to documents
     make_doc = document_factory(nlp)
 
@@ -74,6 +74,7 @@ Now, tidy data may be extracted from the document.
     relation_reducts_df = doc_to_relations_df(doc, reduced=True)
     svos_df = doc_to_svos_df(doc)
     tokens_df = doc_to_tokens_df(doc)
+    all_relations_df = get_all_relations(doc)
 
 Voila!
 
