@@ -12,6 +12,8 @@ _TAGS_PAST = ('VBD', 'VBN')
     #'should', 'would', 'may', 'might', 'can', 'could',
     #'must', 'ought', 'need', 'needs', 'want', 'wants'
 #)
+
+_WORDS_MODAL = ('должный', 'мочь', 'хотеть', 'нужный', 'следовать', 'необходимый', 'надо')
 _WORDS_FUTURE = ("буду", "будешь", "будет", "будем", "будете", "будут")
 
 def detect_tense(verb):
@@ -28,6 +30,9 @@ def detect_tense(verb):
         return tense, mode
     first = verb[0]
     first_text = first.text.lower()
+    # Check mode
+    if first.lemma_ in _WORDS_MODAL:
+      mode = MODAL
     # Check tense
     try:
         second = first.nbor(1)
