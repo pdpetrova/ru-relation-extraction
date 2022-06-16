@@ -12,6 +12,14 @@ from ..utils import get_compound_verb, get_compound_noun, get_entity_from_span
 from ..utils import get_relation, detect_tense, make_hash
 from ..tenses import PRESENT, NORMAL
 
+import torch
+import transformers
+from transformers import AutoModelForSequenceClassification
+from transformers import BertTokenizerFast
+
+tokenizer = BertTokenizerFast.from_pretrained('blanchefort/rubert-base-cased-sentiment')
+model = AutoModelForSequenceClassification.from_pretrained('blanchefort/rubert-base-cased-sentiment', return_dict=True)
+
 try:
     vader = SentimentIntensityAnalyzer()
 except LookupError:
@@ -339,17 +347,29 @@ def lang_s_g(span):
 
 def polarity_s_g(span):
     _polarity = span._._polarity
-    if not _polarity:
+    if span.vocab.lang == 'en':
+      if not _polarity:
         _polarity = vader.polarity_scores(span.text)
         span._.set('polarity', _polarity)
+    elif span.vocab.lang == 'ru':
+      inputs = tokenizer(span.text, max_length=512, padding=True, truncation=True, return_tensors='pt')
+      outputs = model(**inputs)
+      predicted = torch.nn.functional.softmax(outputs.logits, dim=1)
+      predicted = torch.argmax(predicted, dim=1).numpy()
+      _polarity = predicted[0]
+      span._.set('polarity', _polarity)
     return _polarity
 
 def valence_s_g(span):
     scores = span._.polarity
+    if span.vocab.lang == 'ru':
+      return scores
     return (scores['pos']**.5 - scores['neg']**.5) * (1 - scores['neu'])**.5
 
 def sentiment_s_g(span):
     scores = span._.polarity
+    if span.vocab.lang == 'ru':
+      return scores
     return scores['compound']*(1 - scores['neu'])
 
 def start_s_g(span):
@@ -384,17 +404,29 @@ def relations_d_g(doc):
 
 def polarity_d_g(doc):
     _polarity = doc._._polarity
-    if not _polarity:
+    if doc.vocab.lang == 'en':
+      if not _polarity:
         _polarity = vader.polarity_scores(doc.text)
         doc._.set('polarity', _polarity)
+    elif doc.vocab.lang == 'ru':
+      inputs = tokenizer(doc.text, max_length=512, padding=True, truncation=True, return_tensors='pt')
+      outputs = model(**inputs)
+      predicted = torch.nn.functional.softmax(outputs.logits, dim=1)
+      predicted = torch.argmax(predicted, dim=1).numpy()
+      _polarity = predicted[0]
+      doc._.set('polarity', _polarity)
     return _polarity
 
 def valence_d_g(doc):
     scores = doc._.polarity
+    if doc.vocab.lang == 'ru':
+      return scores
     return (scores['pos']**.5 - scores['neg']**.5) * (1 - scores['neu'])**.5
 
 def sentiment_d_g(doc):
     scores = doc._.polarity
+    if doc.vocab.lang == 'ru':
+      return scores
     return scores['compound']*(1 - scores['neu'])
 
 def tokens_d_g(doc):
