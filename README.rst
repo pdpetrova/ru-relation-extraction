@@ -11,6 +11,7 @@ Installation
 .. code-block:: bash
 
     pip install git+https://github.com/pdpetrova/ru-relation-extraction.git
+    pip install transformers
     python -m spacy download ru_core_news_sm
 
 
