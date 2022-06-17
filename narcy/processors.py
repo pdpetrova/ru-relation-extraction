@@ -202,7 +202,7 @@ def get_loc(relations):
         neg = verb._.is_neg
         for loc in verb._.vlocations:
             if loc._.drive._.is_loc_dep or loc._.drive._.is_noun:
-                rtype = 'loc'
+                rtype = 'obl'
             subj_terms = tuple(takewhile(lambda t: t != verb, subj._.drive._.subterms))
             loc_terms = tuple(st for st in loc._.drive._.subterms if st != verb)
             start = min(
